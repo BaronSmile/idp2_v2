@@ -7,7 +7,6 @@ const SearchInput: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const onSearchHandler = (value: string) => {
-    console.log('SEARCH: ', value);
     dispatch(setSearchValue(value));
   };
 

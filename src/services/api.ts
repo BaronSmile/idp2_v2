@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ITask } from '../types.ts';
 
 const urlBASE: string = 'https://64da687be947d30a260b3a0f.mockapi.io/tasks';
 export const getTasks = async (
@@ -6,12 +7,15 @@ export const getTasks = async (
   searchValue: string,
   sort?: 'asc' | 'desc' | undefined,
   title?: string,
+  completed?: boolean | null,
 ) => {
   let url = `${urlBASE}?page=${page}&title=${searchValue}&order=${sort}&sortBy=${
     sort === undefined ? 'id' : title
   }`;
   if (searchValue) {
     url += `&search=title`;
+  } else if (completed !== null) {
+    url += `&completed=${completed}`;
   }
   const response = await axios(url);
 
@@ -38,4 +42,9 @@ export const getTasks = async (
   }
 
   return data;
+};
+
+export const completeTask = async (task: ITask) => {
+  const res = await axios.put(`${urlBASE}/${task.id}`, { ...task, completed: !task.completed });
+  return res.data;
 };

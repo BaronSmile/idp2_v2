@@ -7,6 +7,8 @@ import { ColumnsType } from 'antd/es/table';
 import { useAppDispatch } from '../../providers/store';
 import { setPage, setSort, setSortTitle } from '../../providers/store/reducers/tasksSlice.ts';
 
+import './Tasks.scss';
+
 interface ITasksProps {
   searchValue: string;
   isLoading?: boolean;
@@ -16,37 +18,6 @@ interface ITasksProps {
 }
 const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
   const dispatch = useAppDispatch();
-  // const sortByTitle = (a: ITask, b: ITask): number => {
-  //   const aTitle = a.title.toLowerCase();
-  //   const bTitle = b.title.toLowerCase();
-  //
-  //   if (/^[а-яё]/i.test(aTitle) && /^[а-яё]/i.test(bTitle)) {
-  //     return aTitle.localeCompare(bTitle);
-  //   }
-  //
-  //   if (/^[a-z]/i.test(aTitle) && /^[a-z]/i.test(bTitle)) {
-  //     return aTitle.localeCompare(bTitle);
-  //   }
-  //
-  //   if (/^[а-яё]/i.test(aTitle)) {
-  //     return -1;
-  //   }
-  //
-  //   if (/^[а-яё]/i.test(bTitle)) {
-  //     return 1;
-  //   }
-  //
-  //   return aTitle.localeCompare(bTitle);
-  // };
-
-  // const sortByLevel = (a: ITask, b: ITask): number => {
-  //   const levelOrder: { [key: string]: number } = { easy: 1, medium: 2, hard: 3 };
-  //
-  //   const aLevel = levelOrder[a.level] || Number.MAX_SAFE_INTEGER;
-  //   const bLevel = levelOrder[b.level] || Number.MAX_SAFE_INTEGER;
-  //
-  //   return aLevel - bLevel;
-  // };
 
   const getLevelColor = (level: string) => {
     const levelColors: { [key: string]: string } = {

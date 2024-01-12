@@ -1,0 +1,14 @@
+.tasks_table{
+  padding-top: 20px;
+}
+
+.opacity_row {
+  td:first-child {
+    border-bottom: none;
+  }
+
+  td:not(:last-child) {
+    text-decoration: line-through;
+    color: #a19797;
+  }
+}

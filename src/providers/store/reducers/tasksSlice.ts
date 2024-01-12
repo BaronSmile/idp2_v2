@@ -6,6 +6,7 @@ interface ITasks {
   searchValue: string;
   sort?: 'asc' | 'desc' | undefined;
   sortTitle?: string;
+  completed?: boolean | null;
 }
 
 const initialState: ITasks = {
@@ -14,6 +15,7 @@ const initialState: ITasks = {
   searchValue: '',
   sort: 'asc',
   sortTitle: 'id',
+  completed: null,
 };
 
 const tasksSlice = createSlice({
@@ -35,9 +37,13 @@ const tasksSlice = createSlice({
     setSortTitle(state, action) {
       state.sortTitle = action.payload;
     },
+    setCompleted(state, action) {
+      state.completed = action.payload;
+    },
   },
 });
 
-export const { setPage, setCount, setSearchValue, setSort, setSortTitle } = tasksSlice.actions;
+export const { setPage, setCount, setSearchValue, setSort, setSortTitle, setCompleted } =
+  tasksSlice.actions;
 
 export default tasksSlice.reducer;
