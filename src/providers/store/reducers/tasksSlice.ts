@@ -6,7 +6,7 @@ interface ITasks {
   searchValue: string;
   sort?: 'asc' | 'desc' | undefined;
   sortTitle?: string;
-  completed?: boolean | null;
+  completed?: boolean;
 }
 
 const initialState: ITasks = {
@@ -15,7 +15,7 @@ const initialState: ITasks = {
   searchValue: '',
   sort: 'asc',
   sortTitle: 'id',
-  completed: null,
+  completed: undefined,
 };
 
 const tasksSlice = createSlice({

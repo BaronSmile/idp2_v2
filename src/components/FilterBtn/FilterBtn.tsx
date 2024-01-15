@@ -15,7 +15,7 @@ const FilterBtn: React.FC<IProps> = ({ btnText }) => {
     setActiveIndex(index);
     switch (text) {
       case 'Все задачи':
-        dispatch(setCompleted(null));
+        dispatch(setCompleted(undefined));
         break;
       case 'Активные задачи':
         dispatch(setCompleted(false));
@@ -32,6 +32,7 @@ const FilterBtn: React.FC<IProps> = ({ btnText }) => {
     <Space align={'center'} size={'middle'} className={'table_title'}>
       {btnText.map((text, idx) => (
         <Button
+          key={idx}
           className={idx === activeIndex ? 'btn_active' : 'btn_completed'}
           onClick={() => handleClick(idx, text)}
         >

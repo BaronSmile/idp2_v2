@@ -1,23 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Highlighter from 'react-highlight-words';
-import { ITask } from '../../types.ts';
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Table, TablePaginationConfig } from 'antd';
-import { ColumnsType } from 'antd/es/table';
+import { ITask } from '../../types/tasksType.ts';
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Select, Table, TablePaginationConfig } from 'antd';
 import { useAppDispatch } from '../../providers/store';
 import { setPage, setSort, setSortTitle } from '../../providers/store/reducers/tasksSlice.ts';
 
 import './Tasks.scss';
+import { useDeleteTask, useUpdateTask } from '../../services/mutations.ts';
 
 interface ITasksProps {
   searchValue: string;
   isLoading?: boolean;
-  refetch?: never;
   totalCount?: number;
   dataList: ITask[];
 }
+
+const { Option } = Select;
+
 const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
   const dispatch = useAppDispatch();
+  const [editingRow, setEditingRow] = useState<any>(null);
+  const [form] = Form.useForm();
+
+  const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
 
   const getLevelColor = (level: string) => {
     const levelColors: { [key: string]: string } = {
@@ -33,7 +40,28 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
     return record.completed ? 'opacity_row' : '';
   };
 
-  const columns: ColumnsType<ITask> = [
+  const handleCompletedTask = (record: ITask | undefined) => {
+    if (record) {
+      record.completed = !record.completed;
+      updateTaskMutation.mutate(record);
+    }
+  };
+
+  const handleDeleteTask = async (id: number) => {
+    await deleteTaskMutation.mutateAsync(id);
+  };
+
+  const handleEditTask = (record: ITask) => {
+    setEditingRow(record.id);
+    form.setFieldsValue({
+      title: record.title,
+      description: record.description,
+      point: record.point,
+      level: record.level,
+    });
+  };
+
+  const columns = [
     {
       title: '#',
       dataIndex: 'id',
@@ -45,48 +73,115 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
       dataIndex: 'title',
       key: 'title',
       sorter: true,
-      render: (title: string) =>
-        searchValue ? <Highlighter searchWords={[searchValue]} textToHighlight={title} /> : title,
+      editable: true,
+      render: (title: string, record: ITask) => {
+        if (editingRow === record.id) {
+          return (
+            <Form.Item name={'title'} style={{ margin: 0 }}>
+              <Input />
+            </Form.Item>
+          );
+        } else {
+          return searchValue ? (
+            <Highlighter searchWords={[searchValue]} textToHighlight={title} />
+          ) : (
+            title
+          );
+        }
+      },
     },
     {
       title: 'Описание',
       dataIndex: 'description',
       key: 'description',
+      render: (description: string, record: ITask) => {
+        if (editingRow === record.id) {
+          return (
+            <Form.Item
+              name="description"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input description!' }]}
+            >
+              <Input />
+            </Form.Item>
+          );
+        } else {
+          return description;
+        }
+      },
     },
     {
       title: 'Оценка',
       dataIndex: 'point',
       key: 'point',
-      render: (point: string) => (
-        <span style={{ color: '#4dd7a2', fontWeight: 'bold' }}>{point}</span>
-      ),
       sorter: true,
+      render: (point: string, record: ITask) => {
+        if (editingRow === record.id) {
+          return (
+            <Form.Item
+              name="point"
+              rules={[{ required: true, message: 'Please input point!' }]}
+              style={{ margin: 0 }}
+            >
+              <Input type="number" />
+            </Form.Item>
+          );
+        } else {
+          return <span style={{ color: '#4dd7a2', fontWeight: 'bold' }}>{point}</span>;
+        }
+      },
     },
     {
       title: 'Уровень',
       dataIndex: 'level',
       key: 'level',
       sorter: true,
-      render: (level: string) => <span style={{ color: getLevelColor(level) }}>{level}</span>,
+      editable: true,
+      render: (level: string, record: ITask) => {
+        if (editingRow === record.id) {
+          return (
+            <Form.Item
+              name="level"
+              rules={[{ required: true, message: 'Please input level!' }]}
+              style={{ margin: 0 }}
+            >
+              <Select>
+                <Option value="easy">easy</Option>
+                <Option value="medium">medium</Option>
+                <Option value="hard">hard</Option>
+              </Select>
+            </Form.Item>
+          );
+        } else {
+          return <span style={{ color: getLevelColor(level) }}>{level}</span>;
+        }
+      },
     },
     {
       title: 'Действие',
       dataIndex: 'operation',
       key: 'operation',
-
-      render: () => {
+      render: (_: any, record: ITask) => {
         return (
           <>
-            <EditOutlined
-            // onClick={() => onEditTask(record)}
-            />
+            {editingRow === record.id ? (
+              <Button htmlType="submit" className={'btn_save'}>
+                <SaveOutlined />
+              </Button>
+            ) : (
+              <EditOutlined onClick={() => handleEditTask(record)} />
+            )}
             <DeleteOutlined
-              // onClick={() => onDeleteTask(record.id)}
+              onClick={() => {
+                if (record.id !== undefined) {
+                  handleDeleteTask(record.id);
+                }
+              }}
               style={{ color: '#DA6F6F', margin: ' 0 15px' }}
             />
             <CheckCircleOutlined
-              // onClick={() => onCompleteTask(record)}
-              style={{ color: '#578f57' }}
+              onClick={() => handleCompletedTask(record)}
+              style={record.completed ? { color: '#9cc59c' } : { color: '#578f57' }}
             />
           </>
         );
@@ -105,8 +200,13 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
     );
   };
 
+  const onFinish = (values: ITask) => {
+    updateTaskMutation.mutate({ ...values, id: editingRow });
+    setEditingRow(null);
+  };
+
   return (
-    <div>
+    <Form form={form} onFinish={onFinish}>
       <Table
         rowKey={(record) => record.id || Date.now()}
         rowClassName={rowStyle}
@@ -123,7 +223,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
           },
         }}
       />
-    </div>
+    </Form>
   );
 };
 

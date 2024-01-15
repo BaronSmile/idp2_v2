@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { ITask } from '../types.ts';
+import { ITask } from '../types/tasksType.ts';
 
 const urlBASE: string = 'https://64da687be947d30a260b3a0f.mockapi.io/tasks';
+const axiosInstance = axios.create({ baseURL: urlBASE });
 export const getTasks = async (
   page: number,
   searchValue: string,
@@ -9,18 +10,19 @@ export const getTasks = async (
   title?: string,
   completed?: boolean | null,
 ) => {
-  let url = `${urlBASE}?page=${page}&title=${searchValue}&order=${sort}&sortBy=${
+  let url = `?page=${page}&title=${searchValue}&order=${sort}&sortBy=${
     sort === undefined ? 'id' : title
   }`;
   if (searchValue) {
     url += `&search=title`;
-  } else if (completed !== null) {
+  } else if (completed !== undefined) {
     url += `&completed=${completed}`;
   }
-  const response = await axios(url);
+  const response = await axiosInstance(url);
 
   let data = response.data;
 
+  // и за не корректной сортировки на стороне сервера, сортировка выполнена на клиенте
   if (title === 'id' || sort === undefined) {
     data = data.sort((a: any, b: any) => (sort === 'desc' ? b.id - a.id : a.id - b.id));
   } else if (title === 'level') {
@@ -44,7 +46,14 @@ export const getTasks = async (
   return data;
 };
 
-export const completeTask = async (task: ITask) => {
-  const res = await axios.put(`${urlBASE}/${task.id}`, { ...task, completed: !task.completed });
-  return res.data;
+export const createTask = async (task: ITask) => {
+  await axiosInstance.post('/', task);
+};
+
+export const updateTask = async (task: ITask) => {
+  return (await axiosInstance.put(`/${task.id}`, task)).data;
+};
+
+export const deleteTask = async (id: number) => {
+  await axiosInstance.delete(`/${id}`);
 };
