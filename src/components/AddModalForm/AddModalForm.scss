@@ -1,0 +1,13 @@
+.form {
+  &_task {
+    padding-top: 3em;
+    padding-right: 2em;
+  }
+  &_btn {
+    button {
+      display: flex;
+      margin-top: 20px;
+      margin-left: auto;
+    }
+  }
+}

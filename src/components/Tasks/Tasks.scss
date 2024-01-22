@@ -1,5 +1,18 @@
-.tasks_table{
+.tasks_table {
   padding-top: 20px;
+
+  .ant-table-row-selected td {
+    background-color: rgba(66, 71, 82, 1) !important;
+  }
+
+  .ant-checkbox-checked .ant-checkbox-inner{
+    background-color: rgba(77, 215, 162, 1) !important;
+    border-color: #eeeeee;
+  }
+
+  .ant-checkbox-inner:after {
+    background-color: rgba(77, 215, 162, 1) !important;
+  }
 }
 
 .opacity_row {
@@ -13,7 +26,7 @@
   }
 }
 
-.btn_save{
+.btn_save {
   background-color: transparent;
   border: none;
   outline: none;

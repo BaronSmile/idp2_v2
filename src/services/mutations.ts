@@ -7,17 +7,30 @@ export const useCreateTask = () => {
     mutationFn: (task: ITask) => createTask(task),
   });
 };
+
 export const useUpdateTask = () => {
   const queryClient = useQueryClient();
+
+  const handleUpdateTask = async (tasks: ITask[]) => {
+    await Promise.all(
+      tasks.map(async (task) => {
+        const { id, ...updatedValues } = task;
+        await updateTask({ id, ...updatedValues });
+      }),
+    );
+  };
+
   return useMutation({
-    mutationFn: (task: ITask) => updateTask(task),
+    mutationFn: handleUpdateTask,
     retryDelay: 1000,
-    onSettled: async (_, error, task) => {
+    onSettled: async (_, error, tasks) => {
       if (error) {
         console.log(error);
       } else {
         await queryClient.invalidateQueries({ queryKey: ['tasks'] });
-        await queryClient.invalidateQueries({ queryKey: ['tasks', task.id] });
+        tasks.forEach(async (task) => {
+          await queryClient.invalidateQueries({ queryKey: ['tasks', task.id] });
+        });
       }
     },
   });
@@ -26,7 +39,11 @@ export const useUpdateTask = () => {
 export const useDeleteTask = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => deleteTask(id),
+    mutationFn: async (ids: number[]) => {
+      {
+        await Promise.all(ids.map((id) => deleteTask(id)));
+      }
+    },
     onSettled: async (_, error) => {
       if (error) {
         console.log(error);

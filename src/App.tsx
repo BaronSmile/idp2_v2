@@ -30,6 +30,10 @@ function App() {
             colorTextBase: '#000',
             algorithm: true,
           },
+          InputNumber: {
+            colorTextBase: '#000',
+            algorithm: true,
+          },
         },
         token: {
           colorTextBase: '#fff',

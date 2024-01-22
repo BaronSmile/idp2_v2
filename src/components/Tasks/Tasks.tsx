@@ -4,7 +4,12 @@ import { ITask } from '../../types/tasksType.ts';
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Select, Table, TablePaginationConfig } from 'antd';
 import { useAppDispatch } from '../../providers/store';
-import { setPage, setSort, setSortTitle } from '../../providers/store/reducers/tasksSlice.ts';
+import {
+  setIds,
+  setPage,
+  setSort,
+  setSortTitle,
+} from '../../providers/store/reducers/tasksSlice.ts';
 
 import './Tasks.scss';
 import { useDeleteTask, useUpdateTask } from '../../services/mutations.ts';
@@ -14,13 +19,16 @@ interface ITasksProps {
   isLoading?: boolean;
   totalCount?: number;
   dataList: ITask[];
+  ids?: number[];
+  type?: string;
 }
 
 const { Option } = Select;
 
-const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
+const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, type }) => {
   const dispatch = useAppDispatch();
   const [editingRow, setEditingRow] = useState<any>(null);
+  // const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [form] = Form.useForm();
 
   const updateTaskMutation = useUpdateTask();
@@ -40,15 +48,20 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
     return record.completed ? 'opacity_row' : '';
   };
 
-  const handleCompletedTask = (record: ITask | undefined) => {
+  const handleCompletedTask = (record: ITask | ITask[]) => {
     if (record) {
-      record.completed = !record.completed;
-      updateTaskMutation.mutate(record);
+      const taskIds = Array.isArray(record) ? record : [record];
+      const newTasks = taskIds.map((task) => ({
+        ...task,
+        completed: !task.completed,
+      }));
+      updateTaskMutation.mutate(newTasks);
     }
   };
 
-  const handleDeleteTask = async (id: number) => {
-    await deleteTaskMutation.mutateAsync(id);
+  const handleDeleteTask = async (id: number | number[]) => {
+    const taskIds = Array.isArray(id) ? id : [id];
+    await deleteTaskMutation.mutateAsync(taskIds);
   };
 
   const handleEditTask = (record: ITask) => {
@@ -201,14 +214,29 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
   };
 
   const onFinish = (values: ITask) => {
-    updateTaskMutation.mutate({ ...values, id: editingRow });
+    const updatedTask: ITask = { ...values, id: editingRow };
+    updateTaskMutation.mutate([updatedTask]);
     setEditingRow(null);
+  };
+
+  const rowSelection = {
+    selectedRowKeys: ids,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      switch (type) {
+        case 'tasks':
+          dispatch(setIds(newSelectedRowKeys));
+          break;
+        default:
+          break;
+      }
+    },
   };
 
   return (
     <Form form={form} onFinish={onFinish}>
       <Table
         rowKey={(record) => record.id || Date.now()}
+        rowSelection={rowSelection}
         rowClassName={rowStyle}
         loading={isLoading}
         className="tasks_table"
@@ -217,6 +245,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList }) => {
         onChange={handleTableChange}
         pagination={{
           pageSize: 10,
+          showSizeChanger: false,
           showTotal: (total, range) => `${range[0]}-${range[1]} из ${total} задач`,
           onChange: (page) => {
             dispatch(setPage(page));

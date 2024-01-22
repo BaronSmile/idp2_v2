@@ -1,10 +1,30 @@
-.btn {
-  &_completed {
-    background-color: #2f3646;
+.tabs_filter {
+  .ant-tabs {
+    &-tab {
+      display: block !important;
+
+      &:hover {
+        color: #c7eec7;
+      }
+
+      &-active {
+        .ant-tabs-tab-btn{
+          border: none;
+          color: #578f57 !important;
+        }
+      }
+      &-btn:focus {
+        color: #578f57 !important;
+      }
+    }
+
+
   }
 
-  &_active:hover {
-    color: #2f3646 !important;
-    border-color: #2f3646 !important;
+
+  .ant-tabs-ink-bar {
+    background: #578f57 !important;
+    height: 7px;
   }
+
 }
