@@ -3,8 +3,12 @@ import { ITask } from '../types/tasksType.ts';
 import { createTask, deleteTask, updateTask } from './api';
 
 export const useCreateTask = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (task: ITask) => createTask(task),
+    onSettled: async (_, error) => {
+      error ? console.log(error) : await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
   });
 };
 

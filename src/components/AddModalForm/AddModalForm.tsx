@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, Form, Input, InputNumber, Modal, Select } from 'antd';
 import './AddModalForm.scss';
+import { useCreateTask } from '../../services/mutations.ts';
 
 interface IProps {
   modalOpen: boolean;
@@ -11,8 +12,19 @@ const { Option } = Select;
 
 const AddModalForm: React.FC<IProps> = ({ modalOpen, setModalOpen }) => {
   const [form] = Form.useForm();
-  const handleFinish = (values: any) => {
-    console.log('FORM:', values);
+  const createTaskMutation = useCreateTask();
+
+  useEffect(() => {
+    form.resetFields();
+  }, [modalOpen]);
+
+  const formLayout = {
+    labelCol: { span: 8 },
+    wrapperCol: { span: 24 },
+  };
+
+  const onFinish = (values: any) => {
+    createTaskMutation.mutate(values);
     setModalOpen(false);
   };
 
@@ -43,24 +55,32 @@ const AddModalForm: React.FC<IProps> = ({ modalOpen, setModalOpen }) => {
     >
       <Form
         form={form}
-        onFinish={handleFinish}
-        className="form_task"
-        labelCol={{ span: 6 }}
-        wrapperCol={{ span: 24 }}
-        initialValues={{ remember: true }}
-        autoComplete="off"
+        {...formLayout}
+        onFinish={onFinish}
+        initialValues={{
+          point: 10,
+          level: 'easy',
+        }}
       >
-        <Form.Item name="title" label="Задача">
-          <Input />
+        <Form.Item
+          name={'title'}
+          label={'Название задачи'}
+          rules={[{ required: true, message: 'Это поле обязательно' }]}
+        >
+          <Input placeholder={'Название задачи'} />
         </Form.Item>
-        <Form.Item name="description" label="Описание">
-          <Input />
+        <Form.Item
+          name={'description'}
+          label={'Описание задачи'}
+          rules={[{ required: true, message: 'Это поле обязательно' }]}
+        >
+          <Input.TextArea placeholder={'Описание задачи'} />
         </Form.Item>
-        <Form.Item name="point" label="Оценка">
-          <InputNumber max={150} min={1} onChange={handleNumberChange} />
+        <Form.Item name={'point'} label={'Количество баллов'}>
+          <InputNumber max={150} min={1} defaultValue={10} onChange={handleNumberChange} />
         </Form.Item>
         <Form.Item name="level" label="Уровень">
-          <Select onChange={handleSelectChange}>
+          <Select defaultValue={'easy'} onChange={handleSelectChange}>
             <Option value="easy">Легкий</Option>
             <Option value="medium">Средний</Option>
             <Option value="hard">Тяжелый</Option>

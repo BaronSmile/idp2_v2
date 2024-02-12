@@ -10,44 +10,48 @@ export const getTasks = async (
   title?: string,
   completed?: boolean | null,
 ) => {
-  let url = `?page=${page}&title=${searchValue}&order=${sort}&sortBy=${
-    sort === undefined ? 'id' : title
-  }`;
-  if (searchValue) {
-    url += `&search=title`;
-  } else if (completed !== undefined) {
-    url += `&completed=${completed}`;
+  try {
+    let url = `?page=${page}&title=${searchValue}&order=${sort}&sortBy=${
+      sort === undefined ? 'id' : title
+    }`;
+    if (searchValue) {
+      url += `&search=title`;
+    } else if (completed !== undefined) {
+      url += `&completed=${completed}`;
+    }
+    const response = await axiosInstance(url);
+
+    let data = response.data;
+
+    // и за не корректной сортировки на стороне сервера, сортировка выполнена на клиенте
+    if (title === 'id' || sort === undefined) {
+      data = data.sort((a: any, b: any) => (sort === 'desc' ? b.id - a.id : a.id - b.id));
+    } else if (title === 'level') {
+      data = data.sort((a: { level: string }, b: { level: string }) => {
+        const levelOrder: { [key: string]: number } = {
+          easy: 1,
+          medium: 2,
+          hard: 3,
+        };
+        const levelA = levelOrder[a.level as keyof typeof levelOrder] || 0;
+        const levelB = levelOrder[b.level as keyof typeof levelOrder] || 0;
+
+        return levelA === levelB
+          ? a.level.localeCompare(b.level)
+          : sort === 'desc'
+            ? levelB - levelA
+            : levelA - levelB;
+      });
+    }
+    return data;
+  } catch (error) {
+    console.error('Ошибка при выполнении запроса getTasks:', error);
+    throw error;
   }
-  const response = await axiosInstance(url);
-
-  let data = response.data;
-
-  // и за не корректной сортировки на стороне сервера, сортировка выполнена на клиенте
-  if (title === 'id' || sort === undefined) {
-    data = data.sort((a: any, b: any) => (sort === 'desc' ? b.id - a.id : a.id - b.id));
-  } else if (title === 'level') {
-    data = data.sort((a: { level: string }, b: { level: string }) => {
-      const levelOrder: { [key: string]: number } = {
-        easy: 1,
-        medium: 2,
-        hard: 3,
-      };
-      const levelA = levelOrder[a.level as keyof typeof levelOrder] || 0;
-      const levelB = levelOrder[b.level as keyof typeof levelOrder] || 0;
-
-      return levelA === levelB
-        ? a.level.localeCompare(b.level)
-        : sort === 'desc'
-          ? levelB - levelA
-          : levelA - levelB;
-    });
-  }
-
-  return data;
 };
 
 export const createTask = async (task: ITask) => {
-  await axiosInstance.post('/', task);
+  return await axiosInstance.post('/', task);
 };
 
 export const updateTask = async (task: ITask) => {
@@ -55,5 +59,5 @@ export const updateTask = async (task: ITask) => {
 };
 
 export const deleteTask = async (id: number) => {
-  await axiosInstance.delete(`/${id}`);
+  return await axiosInstance.delete(`/${id}`);
 };

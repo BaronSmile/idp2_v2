@@ -20,10 +20,6 @@ const MainPage = () => {
 
   const tasksQuery = useGetTasks(page, searchValue, sort, sortTitle, completed);
 
-  if (tasksQuery.isError) {
-    return <div>Произошла ошибка</div>;
-  }
-
   const handlerAddTask = () => {
     setAddTaskForm(true);
   };
