@@ -15,7 +15,12 @@
   }
 }
 
+.row{
+  cursor: pointer;
+}
+
 .opacity_row {
+  cursor: pointer;
   td:first-child {
     border-bottom: none;
   }

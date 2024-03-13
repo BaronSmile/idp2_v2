@@ -4,5 +4,7 @@ export type ITask = {
   description: string;
   point: number;
   level: string;
+  dateCreate: number;
   completed?: boolean;
+  itemsTask: any[];
 };

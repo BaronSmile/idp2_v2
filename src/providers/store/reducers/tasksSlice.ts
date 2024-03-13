@@ -8,6 +8,7 @@ interface ITasks {
   sortTitle?: string;
   completed?: boolean;
   ids?: number[];
+  id?: number;
 }
 
 const initialState: ITasks = {
@@ -18,6 +19,7 @@ const initialState: ITasks = {
   sortTitle: 'id',
   completed: undefined,
   ids: [],
+  id: undefined,
 };
 
 const tasksSlice = createSlice({
@@ -45,10 +47,21 @@ const tasksSlice = createSlice({
     setIds(state, action) {
       state.ids = action.payload;
     },
+    setId(state, action) {
+      state.id = action.payload;
+    },
   },
 });
 
-export const { setPage, setCount, setSearchValue, setSort, setSortTitle, setCompleted, setIds } =
-  tasksSlice.actions;
+export const {
+  setPage,
+  setCount,
+  setSearchValue,
+  setSort,
+  setSortTitle,
+  setCompleted,
+  setIds,
+  setId,
+} = tasksSlice.actions;
 
 export default tasksSlice.reducer;

@@ -57,8 +57,6 @@ const ActionsBtn: React.FC<IProps> = ({ ids, dataList }) => {
     }
   };
 
-  console.log('FILTERED:', firstCompleted);
-
   return (
     <div className={'actions_btn'}>
       <Modal

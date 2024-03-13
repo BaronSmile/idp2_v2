@@ -50,6 +50,10 @@ export const getTasks = async (
   }
 };
 
+export const getTask = async (id: number | undefined) => {
+  return (await axiosInstance.get(`/${id}`)).data;
+};
+
 export const createTask = async (task: ITask) => {
   return await axiosInstance.post('/', task);
 };

@@ -5,12 +5,13 @@ import { CheckCircleOutlined, DeleteOutlined, EditOutlined, SaveOutlined } from 
 import { Button, Form, Input, Select, Table, TablePaginationConfig } from 'antd';
 import { useAppDispatch } from '../../providers/store';
 import {
+  setId,
   setIds,
   setPage,
   setSort,
   setSortTitle,
 } from '../../providers/store/reducers/tasksSlice.ts';
-
+import { useNavigate } from 'react-router-dom';
 import './Tasks.scss';
 import { useDeleteTask, useUpdateTask } from '../../services/mutations.ts';
 
@@ -28,8 +29,8 @@ const { Option } = Select;
 const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, type }) => {
   const dispatch = useAppDispatch();
   const [editingRow, setEditingRow] = useState<any>(null);
-  // const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [form] = Form.useForm();
+  const navigate = useNavigate();
 
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
@@ -45,7 +46,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
   };
 
   const rowStyle = (record: ITask) => {
-    return record.completed ? 'opacity_row' : '';
+    return record.completed ? 'opacity_row' : 'row';
   };
 
   const handleCompletedTask = (record: ITask | ITask[]) => {
@@ -242,6 +243,12 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
         className="tasks_table"
         dataSource={dataList}
         columns={columns}
+        onRow={(record) => ({
+          onDoubleClick: () => {
+            dispatch(setId(record.id));
+            navigate('/task/' + record.id);
+          },
+        })}
         onChange={handleTableChange}
         pagination={{
           pageSize: 10,
