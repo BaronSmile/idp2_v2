@@ -18,7 +18,7 @@ const TaskPage = () => {
       setTree({
         name: getTaskQuery.data?.title,
         attributes: { id: 'root' },
-        children: getTaskQuery.data?.itemsTask.length > 0 ? [getTaskQuery.data.itemsTask] : [],
+        children: [getTaskQuery.data.itemsTask],
       });
     }
   }, [getTaskQuery.data]);
