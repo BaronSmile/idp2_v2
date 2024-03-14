@@ -6,7 +6,7 @@ import { useUpdateTask } from '../../services/mutations.ts';
 import { useGetTask } from '../../services/queries.ts';
 
 const TaskPage = () => {
-  const [tree, setTree] = useState<any>({});
+  const [tree, setTree] = useState<RawNodeDatum | RawNodeDatum[]>({});
   const [node, setNode] = useState<TreeNodeDatum | undefined>();
   const { id } = useParams<{ id: string }>();
   const getTaskQuery = useGetTask(Number(id));
@@ -18,7 +18,7 @@ const TaskPage = () => {
       setTree({
         name: getTaskQuery.data?.title,
         attributes: { id: 'root' },
-        children: getTaskQuery.data?.itemsTask.length > 0 ? [getTaskQuery.data.itemsTask] : [],
+        children: [getTaskQuery.data.itemsTask],
       });
     }
   }, [getTaskQuery.data]);
