@@ -7,7 +7,7 @@ import { useGetTask } from '../../services/queries.ts';
 
 const TaskPage = () => {
   const [tree, setTree] = useState<any>({});
-  const [node, setNode] = useState<TreeNodeDatum | undefined>();
+  const [node, setNode] = useState<any>();
   const { id } = useParams<{ id: string }>();
   const getTaskQuery = useGetTask(Number(id));
 
@@ -18,7 +18,7 @@ const TaskPage = () => {
       setTree({
         name: getTaskQuery.data?.title,
         attributes: { id: 'root' },
-        children: [getTaskQuery.data.itemsTask],
+        children: getTaskQuery.data.itemsTask.children || [],
       });
     }
   }, [getTaskQuery.data]);
@@ -35,7 +35,7 @@ const TaskPage = () => {
 
         return { ...tree };
       }
-
+      if (!curNode.children) continue;
       const len = curNode.children.length;
 
       for (let i = 0; i < len; i++) {
@@ -48,7 +48,7 @@ const TaskPage = () => {
     setNode(undefined);
   };
 
-  const handleNodeClick = (node: TreeNodeDatum) => {
+  const handleNodeClick = (node: any) => {
     setNode(node);
   };
 

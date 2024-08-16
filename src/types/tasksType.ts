@@ -1,4 +1,4 @@
-export type ITask = {
+export type ITaskData = {
   id?: number;
   title: string;
   description: string;
@@ -7,4 +7,10 @@ export type ITask = {
   dateCreate: number;
   completed?: boolean;
   itemsTask: any[];
+};
+
+export type ITask = {
+  data: ITaskData[];
+  totalItems: number;
+  currentPage: number;
 };

@@ -15,8 +15,10 @@ const AddModalForm: React.FC<IProps> = ({ modalOpen, setModalOpen }) => {
   const createTaskMutation = useCreateTask();
 
   useEffect(() => {
-    form.resetFields();
-  }, [modalOpen]);
+    if (modalOpen) {
+      form.resetFields();
+    }
+  }, [modalOpen, form]);
 
   const formLayout = {
     labelCol: { span: 8 },
@@ -77,10 +79,10 @@ const AddModalForm: React.FC<IProps> = ({ modalOpen, setModalOpen }) => {
           <Input.TextArea placeholder={'Описание задачи'} />
         </Form.Item>
         <Form.Item name={'point'} label={'Количество баллов'}>
-          <InputNumber max={150} min={1} defaultValue={10} onChange={handleNumberChange} />
+          <InputNumber max={150} min={1} onChange={handleNumberChange} />
         </Form.Item>
         <Form.Item name="level" label="Уровень">
-          <Select defaultValue={'easy'} onChange={handleSelectChange}>
+          <Select onChange={handleSelectChange}>
             <Option value="easy">Легкий</Option>
             <Option value="medium">Средний</Option>
             <Option value="hard">Тяжелый</Option>

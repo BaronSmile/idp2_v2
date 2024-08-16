@@ -13,13 +13,17 @@ const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit }) => {
   return (
     <Modal
       open={isOpen}
-      onCancel={onClose}
+      onCancel={() => {
+        setName('');
+        onClose();
+      }}
       footer={[
         <Button
           key={name}
           disabled={!name}
           onClick={() => {
             onSubmit(name);
+            setName('');
             onClose();
           }}
         >
@@ -32,8 +36,9 @@ const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit }) => {
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            e.preventDefault(); // Чтобы предотвратить стандартное поведение нажатия клавиши Enter в поле ввода
+            e.preventDefault();
             onSubmit(name);
+            setName('');
             onClose();
           }
         }}

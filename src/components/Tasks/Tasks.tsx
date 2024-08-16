@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import Highlighter from 'react-highlight-words';
-import { ITask } from '../../types/tasksType.ts';
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Select, Table, TablePaginationConfig } from 'antd';
+import { ITask, ITaskData } from '../../types/tasksType.ts';
+import {
+  CheckCircleOutlined,
+  DeleteOutlined,
+  DoubleRightOutlined,
+  EditOutlined,
+  ExclamationCircleOutlined,
+  SaveOutlined,
+} from '@ant-design/icons';
+import { Button, Form, Input, Modal, Select, Table, TablePaginationConfig } from 'antd';
 import { useAppDispatch } from '../../providers/store';
 import {
   setId,
@@ -19,12 +26,13 @@ interface ITasksProps {
   searchValue: string;
   isLoading?: boolean;
   totalCount?: number;
-  dataList: ITask[];
+  dataList: ITask;
   ids?: number[];
   type?: string;
 }
 
 const { Option } = Select;
+const { confirm } = Modal;
 
 const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, type }) => {
   const dispatch = useAppDispatch();
@@ -45,11 +53,11 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
     return levelColors[level];
   };
 
-  const rowStyle = (record: ITask) => {
+  const rowStyle = (record: ITaskData) => {
     return record.completed ? 'opacity_row' : 'row';
   };
 
-  const handleCompletedTask = (record: ITask | ITask[]) => {
+  const handleCompletedTask = (record: ITaskData | ITaskData[]) => {
     if (record) {
       const taskIds = Array.isArray(record) ? record : [record];
       const newTasks = taskIds.map((task) => ({
@@ -65,7 +73,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
     await deleteTaskMutation.mutateAsync(taskIds);
   };
 
-  const handleEditTask = (record: ITask) => {
+  const handleEditTask = (record: ITaskData) => {
     setEditingRow(record.id);
     form.setFieldsValue({
       title: record.title,
@@ -83,12 +91,12 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
       sorter: true,
     },
     {
-      title: 'Задача',
+      title: 'Название задачи',
       dataIndex: 'title',
       key: 'title',
       sorter: true,
       editable: true,
-      render: (title: string, record: ITask) => {
+      render: (title: string, record: ITaskData) => {
         if (editingRow === record.id) {
           return (
             <Form.Item name={'title'} style={{ margin: 0 }}>
@@ -108,7 +116,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
       title: 'Описание',
       dataIndex: 'description',
       key: 'description',
-      render: (description: string, record: ITask) => {
+      render: (description: string, record: ITaskData) => {
         if (editingRow === record.id) {
           return (
             <Form.Item
@@ -129,7 +137,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
       dataIndex: 'point',
       key: 'point',
       sorter: true,
-      render: (point: string, record: ITask) => {
+      render: (point: string, record: ITaskData) => {
         if (editingRow === record.id) {
           return (
             <Form.Item
@@ -151,7 +159,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
       key: 'level',
       sorter: true,
       editable: true,
-      render: (level: string, record: ITask) => {
+      render: (level: string, record: ITaskData) => {
         if (editingRow === record.id) {
           return (
             <Form.Item
@@ -175,7 +183,7 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
       title: 'Действие',
       dataIndex: 'operation',
       key: 'operation',
-      render: (_: any, record: ITask) => {
+      render: (_: any, record: ITaskData) => {
         return (
           <>
             {editingRow === record.id ? (
@@ -187,15 +195,35 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
             )}
             <DeleteOutlined
               onClick={() => {
-                if (record.id !== undefined) {
-                  handleDeleteTask(record.id);
-                }
+                confirm({
+                  title: 'Вы уверены, что хотите удалить задачу?',
+                  icon: <ExclamationCircleOutlined />,
+                  content: 'Задача будет удалена безвозвратно',
+                  okText: 'Удалить',
+                  okType: 'danger',
+                  cancelText: 'Отмена',
+                  onOk() {
+                    if (record.id !== undefined) {
+                      handleDeleteTask(record.id);
+                    }
+                  },
+                  onCancel() {},
+                });
               }}
-              style={{ color: '#DA6F6F', margin: ' 0 15px' }}
+              style={{ color: '#DA6F6F', margin: '0 15px' }}
             />
             <CheckCircleOutlined
               onClick={() => handleCompletedTask(record)}
               style={record.completed ? { color: '#9cc59c' } : { color: '#578f57' }}
+            />
+            <DoubleRightOutlined
+              onClick={() => {
+                dispatch(setId(record.id));
+                navigate('/task/' + record.id);
+              }}
+              style={{ color: '#4a4acc', margin: '0 15px', transition: 'transform 0.5s' }} // Добавлена анимация
+              onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(5px)')}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
             />
           </>
         );
@@ -214,8 +242,8 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
     );
   };
 
-  const onFinish = (values: ITask) => {
-    const updatedTask: ITask = { ...values, id: editingRow };
+  const onFinish = (values: ITaskData) => {
+    const updatedTask: ITaskData = { ...values, id: editingRow };
     updateTaskMutation.mutate([updatedTask]);
     setEditingRow(null);
   };
@@ -241,17 +269,13 @@ const Tasks: React.FC<ITasksProps> = ({ searchValue, isLoading, dataList, ids, t
         rowClassName={rowStyle}
         loading={isLoading}
         className="tasks_table"
-        dataSource={dataList}
+        dataSource={dataList.data}
         columns={columns}
-        onRow={(record) => ({
-          onDoubleClick: () => {
-            dispatch(setId(record.id));
-            navigate('/task/' + record.id);
-          },
-        })}
         onChange={handleTableChange}
         pagination={{
-          pageSize: 10,
+          pageSize: 5,
+          current: dataList.currentPage,
+          total: dataList.totalItems || 0,
           showSizeChanger: false,
           showTotal: (total, range) => `${range[0]}-${range[1]} из ${total} задач`,
           onChange: (page) => {

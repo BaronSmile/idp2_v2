@@ -4,12 +4,15 @@ import './ActionsBtn.scss';
 import { useDeleteTask, useUpdateTask } from '../../services/mutations.ts';
 import { setIds } from '../../providers/store/reducers/tasksSlice.ts';
 import { useAppDispatch } from '../../providers/store';
-import { ITask } from '../../types/tasksType.ts';
+import { ITask, ITaskData } from '../../types/tasksType.ts';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 interface IProps {
   ids?: number[];
-  dataList?: ITask[];
+  dataList?: ITask;
 }
+
+const { confirm } = Modal;
 
 const ActionsBtn: React.FC<IProps> = ({ ids, dataList }) => {
   const [isCompleted, setIsCompleted] = useState<boolean | null>(null);
@@ -21,8 +24,8 @@ const ActionsBtn: React.FC<IProps> = ({ ids, dataList }) => {
 
   const texts = ['Удалить задачи', 'Завершить задачи'];
 
-  const filteredTasks = dataList?.filter((task) => ids?.includes(task.id as number)) ?? [];
-  const firstCompleted = dataList?.find((task) => task.id === ids?.[0])?.completed;
+  const filteredTasks = dataList?.data.filter((task) => ids?.includes(task.id as number)) ?? [];
+  const firstCompleted = dataList?.data.find((task) => task.id === ids?.[0])?.completed;
 
   useEffect(() => {
     if (filteredTasks && filteredTasks.length > 0) {
@@ -35,8 +38,8 @@ const ActionsBtn: React.FC<IProps> = ({ ids, dataList }) => {
 
   const actionsHandler = (text: string) => {
     if (isCompleted) {
-      const updatedList = dataList
-        ?.filter((task) => ids?.includes(task.id as number))
+      const updatedList = dataList?.data
+        .filter((task) => ids?.includes(task.id as number))
         .map((task) => ({
           ...task,
           completed: !task.completed,
@@ -44,11 +47,22 @@ const ActionsBtn: React.FC<IProps> = ({ ids, dataList }) => {
 
       switch (text) {
         case 'Удалить задачи':
-          deleteTasksMutation.mutate(ids as number[]);
-          dispatch(setIds([]));
+          confirm({
+            title: 'Вы уверены, что хотите удалить задачи?',
+            icon: <ExclamationCircleOutlined />,
+            content: 'Задачи будут удалены безвозвратно',
+            okText: 'Удалить',
+            okType: 'danger',
+            cancelText: 'Отмена',
+            onOk() {
+              deleteTasksMutation.mutate(ids as number[]);
+              dispatch(setIds([]));
+            },
+            onCancel() {},
+          });
           break;
         case 'Завершить задачи':
-          completedTasksMutation.mutate(updatedList as ITask[]);
+          completedTasksMutation.mutate(updatedList as ITaskData[]);
           dispatch(setIds([]));
           break;
       }
@@ -61,7 +75,6 @@ const ActionsBtn: React.FC<IProps> = ({ ids, dataList }) => {
     <div className={'actions_btn'}>
       <Modal
         open={isModalOpen}
-        onOk={() => setIsModalOpen(false)}
         closable={false}
         footer={[<Button onClick={() => setIsModalOpen(false)}>OK</Button>]}
       >
