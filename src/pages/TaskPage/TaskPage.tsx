@@ -4,8 +4,8 @@ import NodeModal from '../../components/NodeModal/NodeModal.tsx';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateTask } from '../../services/mutations.ts';
 import { useGetTask } from '../../services/queries.ts';
-import { Button } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Alert, Button } from 'antd';
+import { ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 const TaskPage = () => {
   const [tree, setTree] = useState<any>({});
@@ -99,6 +99,19 @@ const TaskPage = () => {
         />
         <h2>Задача {getTaskQuery.data?.title}</h2>
       </div>
+      <Alert
+        message="Подсказка"
+        description="Для создания подзадачи дважды кликните по основной задаче."
+        type="info"
+        showIcon
+        icon={<InfoCircleOutlined />}
+        style={{
+          margin: '0 10px 10px',
+          backgroundColor: '#595959',
+          width: '100%',
+          padding: '15px',
+        }}
+      />
       <Tree
         data={tree}
         zoomable={true}
