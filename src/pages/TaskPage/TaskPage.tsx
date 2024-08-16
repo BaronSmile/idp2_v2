@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { CustomNodeElementProps, RawNodeDatum, Tree, TreeNodeDatum } from 'react-d3-tree';
 import NodeModal from '../../components/NodeModal/NodeModal.tsx';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateTask } from '../../services/mutations.ts';
 import { useGetTask } from '../../services/queries.ts';
+import { Button } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 const TaskPage = () => {
   const [tree, setTree] = useState<any>({});
   const [node, setNode] = useState<any>();
   const { id } = useParams<{ id: string }>();
   const getTaskQuery = useGetTask(Number(id));
+  const navigate = useNavigate();
 
   const updateItemTaskMutation = useUpdateTask();
 
@@ -87,6 +90,15 @@ const TaskPage = () => {
 
   return (
     <div style={{ height: '100vh', width: '100%' }}>
+      <div style={{ padding: '20px', display: 'flex', alignItems: 'center' }}>
+        <Button
+          type={'text'}
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate(-1)}
+          style={{ marginRight: '10px' }}
+        />
+        <h2>Задача {getTaskQuery.data?.title}</h2>
+      </div>
       <Tree
         data={tree}
         zoomable={true}
