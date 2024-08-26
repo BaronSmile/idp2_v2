@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Input, Modal } from 'antd';
 
 interface IProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (treeName: string) => void;
+  initialName?: string;
+  mode: 'add' | 'edit';
 }
 
-const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit }) => {
+const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit, initialName = '', mode }) => {
   const [name, setName] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setName(initialName);
+    }
+  }, [isOpen, initialName]);
+
+  const handleSubmit = () => {
+    onSubmit(name);
+    setName('');
+    onClose();
+  };
 
   return (
     <Modal
@@ -18,16 +32,8 @@ const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit }) => {
         onClose();
       }}
       footer={[
-        <Button
-          key={name}
-          disabled={!name}
-          onClick={() => {
-            onSubmit(name);
-            setName('');
-            onClose();
-          }}
-        >
-          Добавить
+        <Button key={name} disabled={!name} onClick={handleSubmit}>
+          {mode === 'add' ? 'Добавить' : 'Сохранить'}
         </Button>,
       ]}
     >
@@ -37,9 +43,7 @@ const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit }) => {
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
-            onSubmit(name);
-            setName('');
-            onClose();
+            handleSubmit();
           }
         }}
         style={{ marginTop: '2em' }}
