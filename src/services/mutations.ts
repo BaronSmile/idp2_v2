@@ -88,6 +88,10 @@ export const useDeleteTask = () => {
         console.log(error);
       } else {
         await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        const currentData = queryClient.getQueryData(['tasks']) as ITask | undefined;
+        if (!currentData || currentData.data.length === 0) {
+          await queryClient.setQueryData(['tasks'], { data: [], totalItems: 0, currentPage: 1 });
+        }
       }
     },
   });

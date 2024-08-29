@@ -2,3 +2,18 @@
   stroke: #4a4a4a !important;
   stroke-width: 1.5px !important;
 }
+
+.nodeDatumText {
+  color: white;
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}

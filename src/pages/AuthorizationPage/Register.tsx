@@ -1,33 +1,50 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Form, Input, Button, message } from 'antd';
-import { Formik, Field, ErrorMessage } from 'formik';
+import { Formik, Field, ErrorMessage, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { useRegister } from '../../services/mutations.ts';
-import { getUser } from '../../services/api.ts';
-
-const validationSchema = Yup.object().shape({
-  username: Yup.string()
-    .required('Пожалуйста, введите имя пользователя!')
-    .test('unique-username', 'Имя пользователя уже занято', async (value) => {
-      if (!value) return true;
-      try {
-        const users = await getUser(value);
-        // return !users.some((user: any) => user.username === value);
-        return users.length === 0;
-      } catch (error) {
-        return true;
-      }
-    }),
-  password: Yup.string()
-    .required('Пожалуйста, введите пароль!')
-    .min(6, 'Пароль должен содержать минимум 6 символов'),
-  confirmPassword: Yup.string()
-    .required('Пожалуйста, подтвердите пароль!')
-    .oneOf([Yup.ref('password')], 'Пароли не совпадают!'),
-});
+import { checkUsernameUniqueness } from '../../services/api.ts';
+import debounce from 'lodash/debounce';
+import { useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
   const registerMutation = useRegister();
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const debouncedCheckUsername = useCallback(
+    debounce(async (username: string) => {
+      if (username.length > 0) {
+        setIsCheckingUsername(true);
+        try {
+          const isUnique = await checkUsernameUniqueness(username);
+          if (!isUnique) {
+            setUsernameError('Имя пользователя уже занято');
+          } else {
+            setUsernameError(null);
+          }
+        } catch (error) {
+          console.error('Ошибка при проверке имени пользователя:', error);
+        } finally {
+          setIsCheckingUsername(false);
+        }
+      } else {
+        setUsernameError(null);
+      }
+    }, 1000),
+    [],
+  );
+
+  const validationSchema = Yup.object().shape({
+    username: Yup.string().required('Пожалуйста, введите имя пользователя!'),
+    password: Yup.string()
+      .required('Пожалуйста, введите пароль!')
+      .min(6, 'Пароль должен содержать минимум 6 символов'),
+    confirmPassword: Yup.string()
+      .required('Пожалуйста, подтвердите пароль!')
+      .oneOf([Yup.ref('password')], 'Пароли не совпадают!'),
+  });
 
   const initialValues = {
     username: '',
@@ -37,8 +54,13 @@ const Register: React.FC = () => {
 
   const onSubmit = (
     values: { username: string; password: string; confirmPassword: string },
-    { resetForm }: { resetForm: () => void },
+    { setSubmitting, resetForm }: FormikHelpers<typeof initialValues>,
   ) => {
+    if (usernameError) {
+      setSubmitting(false);
+      return;
+    }
+
     const { confirmPassword, ...userData } = values;
 
     registerMutation.mutate(userData, {
@@ -46,20 +68,24 @@ const Register: React.FC = () => {
         if (data.success) {
           message.success('Вы успешно зарегистрировались');
           resetForm();
+          setUsernameError(null);
+          navigate('/login');
         } else {
           message.error(data.message || 'Произошла ошибка при регистрации');
         }
+        setSubmitting(false);
       },
       onError: (error) => {
         message.error('Произошла ошибка при регистрации');
         console.error('Ошибка регистрации:', error);
+        setSubmitting(false);
       },
     });
   };
 
   return (
     <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
-      {({ handleSubmit, errors, touched }) => (
+      {({ handleSubmit, errors, touched, setFieldValue, isSubmitting, isValid, dirty }) => (
         <Form
           onFinish={handleSubmit}
           labelCol={{ span: 8 }}
@@ -68,10 +94,17 @@ const Register: React.FC = () => {
         >
           <Form.Item
             label="Имя пользователя"
-            validateStatus={errors.username && touched.username ? 'error' : ''}
-            help={<ErrorMessage name="username" />}
+            validateStatus={(errors.username && touched.username) || usernameError ? 'error' : ''}
+            help={usernameError || <ErrorMessage name="username" />}
           >
-            <Field name="username" as={Input} />
+            <Input
+              name="username"
+              onChange={(e) => {
+                const username = e.target.value;
+                setFieldValue('username', username, false);
+                debouncedCheckUsername(username);
+              }}
+            />
           </Form.Item>
           <Form.Item
             label="Пароль"
@@ -88,7 +121,11 @@ const Register: React.FC = () => {
             <Field name="confirmPassword" as={Input.Password} />
           </Form.Item>
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={isSubmitting || isCheckingUsername || !!usernameError || !isValid || !dirty}
+            >
               Зарегистрироваться
             </Button>
           </Form.Item>

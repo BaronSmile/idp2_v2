@@ -41,7 +41,8 @@ export const getTasks = async (
   const response = await taskAxiosInstance(url);
 
   let data = response.data;
-  const totalItems = await taskAxiosInstance('?limit=0');
+  const totalItemsResponse = await taskAxiosInstance(`?userId=${userId}&limit=0`);
+  const totalItems = totalItemsResponse.data.length;
 
   // и за не корректной сортировки на стороне сервера, сортировка выполнена на клиенте
   if (title === 'id' || sort === undefined) {
@@ -63,7 +64,8 @@ export const getTasks = async (
           : levelA - levelB;
     });
   }
-  return { data, totalItems: totalItems.data.length, currentPage: page };
+
+  return { data, totalItems, currentPage: page };
 };
 
 export const getTask = async (id: number | undefined) => {
@@ -144,5 +146,28 @@ export const getUserByToken = async (token: string) => {
   } catch (error) {
     console.error('Ошибка при получении пользователя по токену:', error);
     return { success: false, message: 'Недействительный токен' };
+  }
+};
+
+export const checkUsernameUniqueness = async (username: string): Promise<boolean> => {
+  try {
+    const response = await userAxiosInstance.get(`/?username=${username}`);
+    const users = response.data;
+
+    if (Array.isArray(users) && users.length === 0) {
+      return true;
+    }
+
+    const exactMatch = users.some(
+      (user: any) => user.username.toLowerCase() === username.toLowerCase(),
+    );
+
+    return !exactMatch;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return true;
+    }
+    console.error('Ошибка при проверке уникальности имени пользователя:', error);
+    throw new Error('Не удалось проверить уникальность имени пользователя');
   }
 };

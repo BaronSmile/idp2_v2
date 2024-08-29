@@ -5,7 +5,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateTask } from '../../services/mutations.ts';
 import { useGetTask } from '../../services/queries.ts';
 import { Alert, Button, Tooltip } from 'antd';
-import { ArrowLeftOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  ExclamationCircleOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
+import { Modal } from 'antd';
 import './TaskPage.scss';
 
 const TaskPage = () => {
@@ -65,9 +70,19 @@ const TaskPage = () => {
 
   const handleDelete = (e: React.MouseEvent, nodeDatum: TreeNodeDatum) => {
     e.stopPropagation();
-    if (typeof nodeDatum.attributes?.id === 'string') {
-      deleteNode(nodeDatum.attributes.id);
-    }
+    Modal.confirm({
+      title: 'Вы уверены, что хотите удалить эту задачу?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Это действие нельзя будет отменить.',
+      okText: 'Да, удалить',
+      okType: 'danger',
+      cancelText: 'Отмена',
+      onOk() {
+        if (typeof nodeDatum.attributes?.id === 'string') {
+          deleteNode(nodeDatum.attributes.id);
+        }
+      },
+    });
   };
 
   const deleteNode = (id: string) => {
@@ -150,25 +165,9 @@ const TaskPage = () => {
 
     return (
       <g>
-        <foreignObject width="120" height="50" x="-60" y="-60">
+        <foreignObject width="120" height="50" x="-60" y="-50">
           <Tooltip title={nodeDatum.name}>
-            <div
-              style={{
-                color: 'white',
-                fontSize: '12px',
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textAlign: 'center',
-                wordBreak: 'break-all',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {nodeDatum.name}
-            </div>
+            <div className={'nodeDatumText'}>{nodeDatum.name}</div>
           </Tooltip>
         </foreignObject>
         <circle r="15" fill={'#a5a5a5'} />
@@ -184,16 +183,7 @@ const TaskPage = () => {
                 click(nodeDatum);
               }}
             />
-            <text
-              x="20"
-              y="4"
-              textAnchor="middle"
-              style={{ fontSize: '12px', fill: 'white' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                click(nodeDatum);
-              }}
-            >
+            <text x="20" y="4" textAnchor="middle" style={{ fontSize: '12px', fill: 'white' }}>
               +
             </text>
           </g>
@@ -209,13 +199,7 @@ const TaskPage = () => {
                   fill="#2196F3"
                   onClick={(e) => handleEdit(e, nodeDatum)}
                 />
-                <text
-                  x="-20"
-                  y="4"
-                  textAnchor="middle"
-                  style={{ fontSize: '12px', fill: 'white' }}
-                  onClick={(e) => handleEdit(e, nodeDatum)}
-                >
+                <text x="-20" y="4" textAnchor="middle" style={{ fontSize: '12px', fill: 'white' }}>
                   ✎
                 </text>
               </g>
@@ -229,13 +213,7 @@ const TaskPage = () => {
                   fill="#f44336"
                   onClick={(e) => handleDelete(e, nodeDatum)}
                 />
-                <text
-                  x="0"
-                  y="24"
-                  textAnchor="middle"
-                  style={{ fontSize: '12px', fill: 'white' }}
-                  onClick={(e) => handleDelete(e, nodeDatum)}
-                >
+                <text x="0" y="24" textAnchor="middle" style={{ fontSize: '12px', fill: 'white' }}>
                   -
                 </text>
               </g>

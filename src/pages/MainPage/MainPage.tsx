@@ -4,7 +4,7 @@ import SearchInput from '../../components/SearchInput/SearchInput.tsx';
 import FilterBtn from '../../components/FilterBtn/FilterBtn.tsx';
 import { useGetTasks } from '../../services/queries.ts';
 import ActionsBtn from '../../components/ActionsBtn/ActionsBtn.tsx';
-import { Button } from 'antd';
+import { Button, Empty } from 'antd';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 
@@ -45,6 +45,12 @@ const MainPage = ({ updateAuthStatus }: MainPageProps) => {
     navigate('/auth');
   };
 
+  if (tasksQuery.isLoading) {
+    return <div>Загрузка...</div>;
+  }
+
+  const hasData = tasksQuery.data && (tasksQuery.data as ITask).data.length > 0;
+
   return (
     <div>
       <>
@@ -52,28 +58,48 @@ const MainPage = ({ updateAuthStatus }: MainPageProps) => {
           {username && <h3>Привет, {username}!</h3>}
           <Button onClick={handleLogout}>Выйти</Button>
         </div>
-        <SearchInput />
-        <h1>Список задач</h1>
-        <FilterBtn />
-        <div className={'actions_btn_wrapper'}>
-          <Button
-            type={'text'}
-            icon={<PlusCircleOutlined />}
-            className={'add_btn'}
-            onClick={handlerAddTask}
+        {hasData ? (
+          <>
+            <SearchInput />
+            <h1>Список задач</h1>
+            <FilterBtn />
+            <div className={'actions_btn_wrapper'}>
+              <Button
+                type={'text'}
+                icon={<PlusCircleOutlined />}
+                className={'add_btn'}
+                onClick={handlerAddTask}
+              >
+                Добавить
+              </Button>
+              {ids!.length > 1 && (
+                <ActionsBtn dataList={(tasksQuery.data as ITask) || []} ids={ids} />
+              )}
+            </div>
+            <Tasks
+              searchValue={searchValue}
+              isLoading={tasksQuery.isLoading}
+              dataList={(tasksQuery.data as ITask) || { data: [], totalItems: 0, currentPage: 1 }}
+              ids={ids}
+              type={'tasks'}
+            />
+          </>
+        ) : (
+          <Empty
+            description="Задач нет. Добавьте новую задачу!"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
           >
-            Добавить
-          </Button>
-          {ids!.length > 1 && <ActionsBtn dataList={(tasksQuery.data as ITask) || []} ids={ids} />}
-        </div>
+            <Button
+              type={'text'}
+              icon={<PlusCircleOutlined />}
+              className={'add_btn'}
+              onClick={handlerAddTask}
+            >
+              Добавить задачу
+            </Button>
+          </Empty>
+        )}
         <AddModalForm modalOpen={addTaskForm} setModalOpen={setAddTaskForm} />
-        <Tasks
-          searchValue={searchValue}
-          isLoading={tasksQuery.isLoading}
-          dataList={(tasksQuery.data as ITask) || []}
-          ids={ids}
-          type={'tasks'}
-        />
       </>
     </div>
   );

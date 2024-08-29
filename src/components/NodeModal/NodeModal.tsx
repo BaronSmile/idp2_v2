@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Input, Modal } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, InputRef, Input, Modal } from 'antd';
 
 interface IProps {
   isOpen: boolean;
@@ -11,10 +11,15 @@ interface IProps {
 
 const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit, initialName = '', mode }) => {
   const [name, setName] = useState('');
+  const inputRef = useRef<InputRef>(null);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
+      // Устанавливаем фокус на input после открытия модального окна
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   }, [isOpen, initialName]);
 
@@ -38,6 +43,7 @@ const NodeModal: React.FC<IProps> = ({ isOpen, onClose, onSubmit, initialName = 
       ]}
     >
       <Input
+        ref={inputRef}
         value={name}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {

@@ -1,5 +1,5 @@
-import { getTask, getTasks, getUser, getUserByToken } from './api.ts';
-import { useQuery } from '@tanstack/react-query';
+import { getTask, getTasks } from './api.ts';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 export const useGetTasks = (
   page: number,
@@ -14,14 +14,22 @@ export const useGetTasks = (
 
   return useQuery({
     queryKey: ['tasks', userId, page, searchValue, sort, sortTitle, completed],
-    queryFn: () => {
+    queryFn: async () => {
       if (!userId) {
         throw new Error('Пользователь не авторизован');
       }
-      return getTasks(userId, page, searchValue, sort, sortTitle, completed);
+      try {
+        const result = await getTasks(userId, page, searchValue, sort, sortTitle, completed);
+        return result;
+      } catch (error: any) {
+        if (error.response && error.response.status === 404) {
+          return { data: [], totalItems: 0, currentPage: 1 };
+        }
+        throw error;
+      }
     },
-    retryDelay: 1000,
-    enabled: !!userId,
+    retry: 1,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -30,27 +38,5 @@ export const useGetTask = (id: number | undefined) => {
     queryKey: ['task', id],
     queryFn: () => getTask(id),
     retryDelay: 1000,
-  });
-};
-
-export const useGetUser = (username: string) => {
-  return useQuery({
-    queryKey: ['user', username],
-    queryFn: () => getUser(username),
-    retryDelay: 1000,
-    enabled: !!username,
-  });
-};
-
-export const useGetUserByToken = (token: string | null) => {
-  return useQuery<{
-    success: boolean;
-    user?: { userId: string; username: string };
-    message?: string;
-  }>({
-    queryKey: ['user', 'token'],
-    queryFn: () => getUserByToken(token as string),
-    retryDelay: 1000,
-    enabled: !!token,
   });
 };

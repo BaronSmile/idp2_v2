@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Button, Form, Input, InputNumber, Modal, Select } from 'antd';
+import React, { useEffect, useRef } from 'react';
+import { Button, Form, Input, InputNumber, Modal, Select, InputRef } from 'antd';
 import './AddModalForm.scss';
 import { useCreateTask } from '../../services/mutations.ts';
 
@@ -13,10 +13,14 @@ const { Option } = Select;
 const AddModalForm: React.FC<IProps> = ({ modalOpen, setModalOpen }) => {
   const [form] = Form.useForm();
   const createTaskMutation = useCreateTask();
+  const inputRef = useRef<InputRef>(null);
 
   useEffect(() => {
     if (modalOpen) {
       form.resetFields();
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   }, [modalOpen, form]);
 
@@ -69,7 +73,7 @@ const AddModalForm: React.FC<IProps> = ({ modalOpen, setModalOpen }) => {
           label={'Название задачи'}
           rules={[{ required: true, message: 'Это поле обязательно' }]}
         >
-          <Input placeholder={'Название задачи'} />
+          <Input ref={inputRef} placeholder={'Название задачи'} />
         </Form.Item>
         <Form.Item
           name={'description'}
