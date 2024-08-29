@@ -49,7 +49,7 @@ const MainPage = ({ updateAuthStatus }: MainPageProps) => {
     return <div>Загрузка...</div>;
   }
 
-  const hasData = tasksQuery.data && (tasksQuery.data as ITask).data.length > 0;
+  const hasData = tasksQuery.data && 'totalTasks' in tasksQuery.data && tasksQuery.data.totalTasks > 0;
 
   return (
     <div>

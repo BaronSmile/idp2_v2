@@ -18,12 +18,15 @@ export const useGetTasks = (
       if (!userId) {
         throw new Error('Пользователь не авторизован');
       }
+      const totalTasksResponse = await getTasks(userId, 1, '', undefined, undefined, undefined);
+      const totalTasks = totalTasksResponse.totalItems;
       try {
         const result = await getTasks(userId, page, searchValue, sort, sortTitle, completed);
-        return result;
+
+        return { ...result, totalTasks };
       } catch (error: any) {
         if (error.response && error.response.status === 404) {
-          return { data: [], totalItems: 0, currentPage: 1 };
+          return { data: [], totalItems: 0, currentPage: 1, totalTasks };
         }
         throw error;
       }

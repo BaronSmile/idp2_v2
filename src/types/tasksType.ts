@@ -13,4 +13,5 @@ export type ITask = {
   data: ITaskData[];
   totalItems: number;
   currentPage: number;
+  totalTasks?: number;
 };
