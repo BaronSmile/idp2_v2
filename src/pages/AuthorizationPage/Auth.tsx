@@ -19,7 +19,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ updateAuthStatus }) => {
     {
       key: '2',
       label: 'Регистрация',
-      children: <Register />,
+      children: <Register updateAuthStatus={updateAuthStatus} />,
     },
   ];
 

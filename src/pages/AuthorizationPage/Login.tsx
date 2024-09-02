@@ -18,6 +18,7 @@ const Login: React.FC<LoginProps> = ({ updateAuthStatus }) => {
         if (data.success && data.token) {
           message.success('Вы успешно вошли в систему');
           updateAuthStatus();
+          form.resetFields();
           navigate('/tasks');
         } else {
           message.error(data.message || 'Произошла ошибка при входе');

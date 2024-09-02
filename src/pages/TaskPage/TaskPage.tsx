@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CustomNodeElementProps, RawNodeDatum, Tree, TreeNodeDatum } from 'react-d3-tree';
 import NodeModal from '../../components/NodeModal/NodeModal.tsx';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -170,19 +170,16 @@ const TaskPage = () => {
             <div className={'nodeDatumText'}>{nodeDatum.name}</div>
           </Tooltip>
         </foreignObject>
-        <circle r="15" fill={'#a5a5a5'} />
+        <circle r="15" fill={'#a5a5a5'} style={{ cursor: 'default' }} />
         <Tooltip title="Добавить">
-          <g>
-            <circle
-              r="8"
-              cx="20"
-              cy="0"
-              fill="#4CAF50"
-              onClick={(e) => {
-                e.stopPropagation();
-                click(nodeDatum);
-              }}
-            />
+          <g
+            style={{ position: 'relative', zIndex: 20 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              click(nodeDatum);
+            }}
+          >
+            <circle r="8" cx="20" cy="0" fill="#4CAF50" />
             <text x="20" y="4" textAnchor="middle" style={{ fontSize: '12px', fill: 'white' }}>
               +
             </text>
@@ -191,28 +188,16 @@ const TaskPage = () => {
         {!isRoot && (
           <>
             <Tooltip title="Редактировать">
-              <g>
-                <circle
-                  r="8"
-                  cx="-20"
-                  cy="0"
-                  fill="#2196F3"
-                  onClick={(e) => handleEdit(e, nodeDatum)}
-                />
+              <g onClick={(e) => handleEdit(e, nodeDatum)}>
+                <circle r="8" cx="-20" cy="0" fill="#2196F3" />
                 <text x="-20" y="4" textAnchor="middle" style={{ fontSize: '12px', fill: 'white' }}>
                   ✎
                 </text>
               </g>
             </Tooltip>
             <Tooltip title="Удалить">
-              <g>
-                <circle
-                  r="8"
-                  cx="0"
-                  cy="20"
-                  fill="#f44336"
-                  onClick={(e) => handleDelete(e, nodeDatum)}
-                />
+              <g onClick={(e) => handleDelete(e, nodeDatum)}>
+                <circle r="8" cx="0" cy="20" fill="#f44336" />
                 <text x="0" y="24" textAnchor="middle" style={{ fontSize: '12px', fill: 'white' }}>
                   -
                 </text>

@@ -3,11 +3,15 @@ import { Form, Input, Button, message } from 'antd';
 import { Formik, Field, ErrorMessage, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { useRegister } from '../../services/mutations.ts';
-import { checkUsernameUniqueness } from '../../services/api.ts';
+import { checkUsernameUniqueness, login } from '../../services/api.ts';
 import debounce from 'lodash/debounce';
 import { useNavigate } from 'react-router-dom';
 
-const Register: React.FC = () => {
+interface RegisterProps {
+  updateAuthStatus: () => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ updateAuthStatus }) => {
   const registerMutation = useRegister();
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
@@ -64,12 +68,21 @@ const Register: React.FC = () => {
     const { confirmPassword, ...userData } = values;
 
     registerMutation.mutate(userData, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         if (data.success) {
           message.success('Вы успешно зарегистрировались');
           resetForm();
           setUsernameError(null);
-          navigate('/login');
+
+          // Автоматический вход после успешной регистрации
+          const loginResponse = await login(userData.username, userData.password);
+          if (loginResponse.success && loginResponse.token) {
+            localStorage.setItem('token', loginResponse.token);
+            updateAuthStatus();
+            navigate('/tasks');
+          } else {
+            message.error(loginResponse.message || 'Произошла ошибка при входе');
+          }
         } else {
           message.error(data.message || 'Произошла ошибка при регистрации');
         }
