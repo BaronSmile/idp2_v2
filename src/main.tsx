@@ -4,7 +4,7 @@ import App from './App.tsx';
 import './index.scss';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Provider } from 'react-redux';
 import { store } from './providers/store';
 
@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
           <App />
-          <ReactQueryDevtools initialIsOpen={false} />
+          {/*<ReactQueryDevtools initialIsOpen={false} />*/}
         </QueryClientProvider>
       </Provider>
     </BrowserRouter>

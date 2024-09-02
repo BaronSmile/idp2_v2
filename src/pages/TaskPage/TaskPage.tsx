@@ -4,19 +4,20 @@ import NodeModal from '../../components/NodeModal/NodeModal.tsx';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateTask } from '../../services/mutations.ts';
 import { useGetTask } from '../../services/queries.ts';
-import { Alert, Button, Tooltip } from 'antd';
+import { Button, Dropdown, FloatButton, MenuProps, Modal, Space, Tooltip } from 'antd';
 import {
   ArrowLeftOutlined,
+  DownOutlined,
   ExclamationCircleOutlined,
-  InfoCircleOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Modal } from 'antd';
 import './TaskPage.scss';
 
 const TaskPage = () => {
   const [tree, setTree] = useState<any>({});
   const [node, setNode] = useState<any>();
   const [editingNode, setEditingNode] = useState<TreeNodeDatum | null>(null);
+  const [nodeLines, setNodeLines] = useState<Record<string, number>>({});
   const { id } = useParams<{ id: string }>();
   const getTaskQuery = useGetTask(Number(id));
   const navigate = useNavigate();
@@ -156,18 +157,54 @@ const TaskPage = () => {
     return null;
   };
 
+  const getYPosition = (id: string) => {
+    const lines = nodeLines[id] || 1;
+    switch (lines) {
+      case 1:
+        return -33;
+      case 2:
+        return -48;
+      case 3:
+        return -63;
+      default:
+        return -33;
+    }
+  };
+
   const renderRectSvgNode = (
     customProps: CustomNodeElementProps,
     click: (datum: TreeNodeDatum) => void,
   ) => {
     const { nodeDatum } = customProps;
     const isRoot = nodeDatum.attributes?.id === 'root';
+    const nodeId = nodeDatum.attributes?.id?.toString() || '';
 
     return (
       <g>
-        <foreignObject width="120" height="50" x="-60" y="-50">
+        <foreignObject width="120" height={50} x="-60" y={getYPosition(nodeId)}>
           <Tooltip title={nodeDatum.name}>
-            <div className={'nodeDatumText'}>{nodeDatum.name}</div>
+            <div
+              className={'nodeDatumText'}
+              ref={(el) => {
+                if (el) {
+                  const style = window.getComputedStyle(el);
+                  const lineHeight = parseFloat(style.lineHeight);
+                  const height = el.offsetHeight;
+                  const fontSize = parseFloat(style.fontSize);
+
+                  let lines: number;
+                  if (isNaN(lineHeight)) {
+                    lines = Math.round(height / (fontSize * 1.2));
+                  } else {
+                    lines = Math.round(height / lineHeight);
+                  }
+
+                  setNodeLines((prev) => ({ ...prev, [nodeId]: lines }));
+                }
+              }}
+            >
+              {nodeDatum.name}
+            </div>
           </Tooltip>
         </foreignObject>
         <circle r="15" fill={'#a5a5a5'} style={{ cursor: 'default' }} />
@@ -209,6 +246,83 @@ const TaskPage = () => {
     );
   };
 
+  const getLevelColor = (level: string | undefined) => {
+    switch (level?.toLowerCase()) {
+      case 'easy':
+        return '#578f57';
+      case 'medium':
+        return 'yellow';
+      case 'hard':
+        return '#DA6F6F';
+      default:
+        return 'white';
+    }
+  };
+
+  const truncateDescription = (description: string | undefined, maxLength: number = 50) => {
+    if (!description) return '';
+    return description.length > maxLength ? description.slice(0, maxLength) + '...' : description;
+  };
+
+  const items: MenuProps['items'] = [
+    {
+      key: 'description',
+      label: (
+        <span>
+          <span style={{ fontWeight: 'bold' }}>Описание:</span>{' '}
+          <span style={{ color: '#a0a0a0' }}>
+            {truncateDescription(getTaskQuery.data?.description)}
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: 'point',
+      label: (
+        <span>
+          <span style={{ fontWeight: 'bold' }}>Очки:</span>{' '}
+          <span style={{ color: '#4dd7a2', fontWeight: 'bold' }}>{getTaskQuery.data?.point}</span>
+        </span>
+      ),
+    },
+    {
+      key: 'level',
+      label: (
+        <span>
+          <span style={{ fontWeight: 'bold' }}>Уровень:</span>{' '}
+          <span style={{ color: getLevelColor(getTaskQuery.data?.level) }}>
+            {getTaskQuery.data?.level}
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: 'completed',
+      label: (
+        <span>
+          <span style={{ fontWeight: 'bold' }}>Статус:</span>{' '}
+          <span
+            style={{
+              color: getTaskQuery.data?.completed ? '#4CAF50' : '#FF5252',
+              fontWeight: 'bold',
+            }}
+          >
+            {getTaskQuery.data?.completed ? 'Выполнено' : 'Не выполнено'}
+          </span>
+        </span>
+      ),
+    },
+  ];
+
+  const dropdownStyle: React.CSSProperties = {
+    backgroundColor: '#1f1f1f',
+  };
+
+  const menuProps: MenuProps = {
+    items,
+    style: dropdownStyle,
+  };
+
   return (
     <div style={{ height: '100vh', width: '100%' }}>
       <div style={{ padding: '20px', display: 'flex', alignItems: 'center' }}>
@@ -218,28 +332,15 @@ const TaskPage = () => {
           onClick={() => navigate(-1)}
           style={{ marginRight: '10px' }}
         />
-        <h2>Задача {getTaskQuery.data?.title}</h2>
+        <Dropdown menu={menuProps} trigger={['hover']}>
+          <Space style={{ cursor: 'pointer' }}>
+            <h2 style={{ color: getLevelColor(getTaskQuery.data?.level) }}>
+              Задача {getTaskQuery.data?.title}
+            </h2>
+            <DownOutlined />
+          </Space>
+        </Dropdown>
       </div>
-      <Alert
-        message="Подсказка"
-        description={
-          <ul>
-            <li>Для создания подзадачи нажмите на зеленый плюс рядом с задачей.</li>
-            <li>Чтобы отредактировать задачу, используйте синюю кнопку с иконкой карандаша.</li>
-            <li>Для удаления задачи нажмите на красную кнопку с минусом.</li>
-            <li>Наведите курсор на текст задачи, чтобы увидеть полное описание.</li>
-          </ul>
-        }
-        type="info"
-        showIcon
-        icon={<InfoCircleOutlined />}
-        style={{
-          margin: '0 10px 10px',
-          backgroundColor: '#595959',
-          width: '100%',
-          padding: '15px',
-        }}
-      />
       <Tree
         data={tree}
         zoomable={true}
@@ -257,6 +358,19 @@ const TaskPage = () => {
         onClose={close}
         initialName={editingNode?.name || ''}
         mode={editingNode ? 'edit' : 'add'}
+      />
+      <FloatButton
+        icon={<QuestionCircleOutlined />}
+        type={'primary'}
+        tooltip={
+          <ul>
+            <li>Для создания подзадачи нажмите на зеленый плюс рядом с задачей.</li>
+            <li>Чтобы отредактировать задачу, используйте синюю кнопку с иконкой карандаша.</li>
+            <li>Для удаления задачи нажмите на красную кнопку с минусом.</li>
+            <li>Наведите курсор на текст задачи, чтобы увидеть полное описание.</li>
+          </ul>
+        }
+        style={{ position: 'fixed', right: 24, bottom: 24 }}
       />
     </div>
   );
