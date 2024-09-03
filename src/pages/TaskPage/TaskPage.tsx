@@ -4,7 +4,7 @@ import NodeModal from '../../components/NodeModal/NodeModal.tsx';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateTask } from '../../services/mutations.ts';
 import { useGetTask } from '../../services/queries.ts';
-import { Button, FloatButton, Modal, Tooltip } from 'antd';
+import { Button, FloatButton, Modal, Tag, Tooltip } from 'antd';
 import {
   ArrowLeftOutlined,
   ExclamationCircleOutlined,
@@ -282,24 +282,27 @@ const TaskPage = () => {
           <div
             style={{
               borderLeft: `4px solid ${getLevelColor(getTaskQuery.data?.level)}`,
-              paddingLeft: '10px',
-              backgroundColor: 'transparent',
             }}
+            className={'task_header'}
           >
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-              <h2 style={{ margin: '0', color: '#fff', marginRight: '10px' }}>
-                {getTaskQuery.data?.title}
-              </h2>
-              <span
-                style={{
-                  color: '#4dd7a2',
-                  fontWeight: 'normal',
-                  fontSize: '12px',
-                }}
+            <h2 style={{ margin: '0', color: '#fff', marginRight: '10px' }}>
+              {getTaskQuery.data?.title}
+            </h2>
+            <span
+              style={{
+                color: '#4dd7a2',
+                fontWeight: 'normal',
+                fontSize: '12px',
+              }}
+            >
+              <Tag
+                style={{ backgroundColor: 'transparent' }}
+                color={getLevelColor(getTaskQuery.data?.level)}
               >
-                ({getTaskQuery.data?.point} очков)
-              </span>
-            </div>
+                {getTaskQuery.data?.level}{' '}
+              </Tag>
+              ({getTaskQuery.data?.point} очков)
+            </span>
             <p
               style={{
                 margin: '5px 0 0 0',
@@ -312,17 +315,19 @@ const TaskPage = () => {
           </div>
         </div>
       </div>
-      <Tree
-        data={tree}
-        zoomable={true}
-        onNodeClick={handleNodeClick}
-        translate={{
-          x: 200,
-          y: 200,
-        }}
-        renderCustomNodeElement={(nodeInfo) => renderRectSvgNode(nodeInfo, handleNodeClick)}
-        pathClassFunc={() => 'custom-path-class'}
-      />
+      <div className={'tree-container'}>
+        <Tree
+          data={tree}
+          zoomable={true}
+          onNodeClick={handleNodeClick}
+          translate={{
+            x: 200,
+            y: 200,
+          }}
+          renderCustomNodeElement={(nodeInfo) => renderRectSvgNode(nodeInfo, handleNodeClick)}
+          pathClassFunc={() => 'custom-path-class'}
+        />
+      </div>
       <NodeModal
         onSubmit={handleSubmit}
         isOpen={Boolean(node) || Boolean(editingNode)}

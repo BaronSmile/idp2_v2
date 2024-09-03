@@ -15,3 +15,19 @@
   -webkit-line-clamp: 3;
   border-radius: 3px;
 }
+
+.tree-container {
+  background-color: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  width: 100%;
+  height: calc(100vh - 100px);
+  border-radius: 5px;
+}
+
+.task_header{
+  padding-left: 10px;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
