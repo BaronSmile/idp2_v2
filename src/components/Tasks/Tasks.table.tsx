@@ -195,8 +195,8 @@ export const getTaskColumns = (
 
 export const getLevelColor = (level: string) => {
   const levelColors: { [key: string]: string } = {
-    easy: '#578f57',
-    medium: 'yellow',
+    easy: '#52c41a',
+    medium: '#faad14',
     hard: '#DA6F6F',
   };
 

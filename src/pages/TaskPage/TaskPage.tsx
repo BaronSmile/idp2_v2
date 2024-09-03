@@ -245,17 +245,24 @@ const TaskPage = () => {
     );
   };
 
-  const getLevelColor = (level: string | undefined) => {
-    switch (level?.toLowerCase()) {
-      case 'easy':
-        return '#578f57';
-      case 'medium':
-        return 'yellow';
-      case 'hard':
-        return '#DA6F6F';
-      default:
-        return 'white';
-    }
+  const getBorderColor = (level: string | undefined) => {
+    const colorMap = {
+      easy: '#52c41a',
+      medium: '#faad14',
+      hard: '#DA6F6F',
+      default: '#d9d9d9',
+    };
+    return colorMap[(level?.toLowerCase() || 'default') as keyof typeof colorMap];
+  };
+
+  const getCustomTagStyle = (level: string | undefined) => {
+    const color = getBorderColor(level);
+
+    return {
+      color: color,
+      backgroundColor: 'transparent',
+      border: `1px solid ${color}`,
+    };
   };
 
   const truncateDescription = (description: string | undefined, maxLength: number = 50) => {
@@ -281,7 +288,7 @@ const TaskPage = () => {
           />
           <div
             style={{
-              borderLeft: `4px solid ${getLevelColor(getTaskQuery.data?.level)}`,
+              borderLeft: `4px solid ${getBorderColor(getTaskQuery.data?.level)}`,
             }}
             className={'task_header'}
           >
@@ -295,18 +302,16 @@ const TaskPage = () => {
                 fontSize: '12px',
               }}
             >
-              <Tag
-                style={{ backgroundColor: 'transparent' }}
-                color={getLevelColor(getTaskQuery.data?.level)}
-              >
+              <Tag style={getCustomTagStyle(getTaskQuery.data?.level)}>
                 {getTaskQuery.data?.level}{' '}
               </Tag>
               ({getTaskQuery.data?.point} очков)
             </span>
             <p
               style={{
-                margin: '5px 0 0 0',
+                margin: '0',
                 color: '#a5a5a5',
+                paddingBottom: '3px',
                 fontSize: '14px',
               }}
             >
