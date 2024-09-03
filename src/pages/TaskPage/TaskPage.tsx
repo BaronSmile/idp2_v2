@@ -4,10 +4,9 @@ import NodeModal from '../../components/NodeModal/NodeModal.tsx';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateTask } from '../../services/mutations.ts';
 import { useGetTask } from '../../services/queries.ts';
-import { Button, Dropdown, FloatButton, MenuProps, Modal, Space, Tooltip } from 'antd';
+import { Button, FloatButton, Modal, Tooltip } from 'antd';
 import {
   ArrowLeftOutlined,
-  DownOutlined,
   ExclamationCircleOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
@@ -264,82 +263,54 @@ const TaskPage = () => {
     return description.length > maxLength ? description.slice(0, maxLength) + '...' : description;
   };
 
-  const items: MenuProps['items'] = [
-    {
-      key: 'description',
-      label: (
-        <span>
-          <span style={{ fontWeight: 'bold' }}>Описание:</span>{' '}
-          <span style={{ color: '#a0a0a0' }}>
-            {truncateDescription(getTaskQuery.data?.description)}
-          </span>
-        </span>
-      ),
-    },
-    {
-      key: 'point',
-      label: (
-        <span>
-          <span style={{ fontWeight: 'bold' }}>Очки:</span>{' '}
-          <span style={{ color: '#4dd7a2', fontWeight: 'bold' }}>{getTaskQuery.data?.point}</span>
-        </span>
-      ),
-    },
-    {
-      key: 'level',
-      label: (
-        <span>
-          <span style={{ fontWeight: 'bold' }}>Уровень:</span>{' '}
-          <span style={{ color: getLevelColor(getTaskQuery.data?.level) }}>
-            {getTaskQuery.data?.level}
-          </span>
-        </span>
-      ),
-    },
-    {
-      key: 'completed',
-      label: (
-        <span>
-          <span style={{ fontWeight: 'bold' }}>Статус:</span>{' '}
-          <span
-            style={{
-              color: getTaskQuery.data?.completed ? '#4CAF50' : '#FF5252',
-              fontWeight: 'bold',
-            }}
-          >
-            {getTaskQuery.data?.completed ? 'Выполнено' : 'Не выполнено'}
-          </span>
-        </span>
-      ),
-    },
-  ];
-
-  const dropdownStyle: React.CSSProperties = {
-    backgroundColor: '#1f1f1f',
-  };
-
-  const menuProps: MenuProps = {
-    items,
-    style: dropdownStyle,
-  };
-
   return (
     <div style={{ height: '100vh', width: '100%' }}>
-      <div style={{ padding: '20px', display: 'flex', alignItems: 'center' }}>
-        <Button
-          type={'text'}
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(-1)}
-          style={{ marginRight: '10px' }}
-        />
-        <Dropdown menu={menuProps} trigger={['hover']}>
-          <Space style={{ cursor: 'pointer' }}>
-            <h2 style={{ color: getLevelColor(getTaskQuery.data?.level) }}>
-              Задача {getTaskQuery.data?.title}
-            </h2>
-            <DownOutlined />
-          </Space>
-        </Dropdown>
+      <div style={{ padding: '20px' }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            backgroundColor: 'transparent',
+          }}
+        >
+          <Button
+            type={'text'}
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(-1)}
+            style={{ marginRight: '20px' }}
+          />
+          <div
+            style={{
+              borderLeft: `4px solid ${getLevelColor(getTaskQuery.data?.level)}`,
+              paddingLeft: '10px',
+              backgroundColor: 'transparent',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <h2 style={{ margin: '0', color: '#fff', marginRight: '10px' }}>
+                {getTaskQuery.data?.title}
+              </h2>
+              <span
+                style={{
+                  color: '#4dd7a2',
+                  fontWeight: 'normal',
+                  fontSize: '12px',
+                }}
+              >
+                ({getTaskQuery.data?.point} очков)
+              </span>
+            </div>
+            <p
+              style={{
+                margin: '5px 0 0 0',
+                color: '#a5a5a5',
+                fontSize: '14px',
+              }}
+            >
+              {truncateDescription(getTaskQuery.data?.description, 100)}
+            </p>
+          </div>
+        </div>
       </div>
       <Tree
         data={tree}
